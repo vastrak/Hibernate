@@ -25,7 +25,7 @@ public class PatientTest {
 	private static final String CELL1 = "999.99.99.99";
 	private static final String CELL2 = "888.88.88.88";
 	private static final Integer AGE = 25;
-	private static final Sex SEX = Sex.MALE;
+	private static final Gender GENDER = Gender.MALE;
 	private static final Integer SYSTOLIC = 140;
 	private static final Integer DIASTOLIC = 95;
 	private static final Integer BPM = 78;
@@ -45,7 +45,7 @@ public class PatientTest {
 		patientLuis = new Patient.PatientBuilder().patient_id(null) // new patients have null id
 				.name(NAME)
 				.age(AGE)
-				.sex(SEX)
+				.gender(GENDER)
 				.bloodPressures(listBPLuis)
 				.patientDetails(patientDetailsLuis)
 				.build();

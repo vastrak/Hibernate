@@ -45,7 +45,7 @@ public class Patient implements Serializable {
 
 	@Enumerated(EnumType.STRING) // Persist enum type property or field as a String
 	@Column(length = 6)
-	private Sex sex;
+	private Gender gender;
 
 	
 	// Esto crea una tabla con FK patient_id
