@@ -60,7 +60,7 @@ public class PatientTest {
 		
 		// Find the new patient
 		session = HibernateUtil.getSessionFactory().openSession();
-		Patient found = session.load(Patient.class, id);
+		Patient found = session.get(Patient.class, id);
 		
 		logger.info(">>>>>>>>>> original date: "+DATE.getTime()+" retrieved date: "+(found.getBloodPressures().get(0).getDate().getTime()));
 		
@@ -83,6 +83,9 @@ public class PatientTest {
 		final int NEWSYSTOLIC = 135;
 	
 		session = HibernateUtil.getSessionFactory().openSession();
+		// You should not use load method to determine if an instance exists (use get() instead).
+		// Use load only to retrieve an instance that you assume exists, 
+		// where non-existence would be an actual error.
 		Patient oldPatient = session.load(Patient.class, id);
 		Transaction tx = session.beginTransaction();
 		oldPatient.setAge(NEWAGE);
@@ -93,7 +96,7 @@ public class PatientTest {
 		session.close();
 		
 		session = HibernateUtil.getSessionFactory().openSession();
-		Patient found = session.load(Patient.class, id);
+		Patient found = session.get(Patient.class, id);
 		
 		assertThat(found).isNotNull();
 		assertThat(found.getPatient_id()).isEqualTo(id);
@@ -111,7 +114,7 @@ public class PatientTest {
 	public void test003_DeleteList() {
 		
 		session = HibernateUtil.getSessionFactory().openSession();
-		Patient oldPatient = session.load(Patient.class, id);
+		Patient oldPatient = session.get(Patient.class, id);
 		Transaction tx = session.beginTransaction();
 		oldPatient.getBloodPressures().remove(0);
 		session.save(oldPatient);
@@ -119,7 +122,7 @@ public class PatientTest {
 		session.close();
 
 		session = HibernateUtil.getSessionFactory().openSession();
-		Patient found = session.load(Patient.class, id);		
+		Patient found = session.get(Patient.class, id);		
 
 		assertThat(found).isNotNull();
 		assertThat(found.getPatient_id()).isEqualTo(id);
