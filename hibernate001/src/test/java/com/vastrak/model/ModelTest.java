@@ -20,7 +20,8 @@ import org.junit.runners.MethodSorters;
 
 import com.vastrak.util.HibernateUtil;
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING) // Allows the user to choose the order of execution of the methods within a test class
+@FixMethodOrder(MethodSorters.NAME_ASCENDING) // Allows the user to choose the order of execution 
+											  // of the methods within a test class
 public class ModelTest {
 
 	private static final Log logger = LogFactory.getLog(ModelTest.class);
@@ -115,6 +116,7 @@ public class ModelTest {
 	 * 
 	 */
 	@Test
+	@SuppressWarnings("unchecked")
 	public void test002_readingUser() {
 
 		Session session = HibernateUtil.getSessionFactory().openSession();
@@ -133,6 +135,7 @@ public class ModelTest {
 	 * 
 	 */
 	@Test
+	@SuppressWarnings("unchecked")
 	public void test003_readingArticlesFromUser() {
 		
 		Session session = HibernateUtil.getSessionFactory().getCurrentSession();
@@ -158,6 +161,7 @@ public class ModelTest {
 	 * 
 	 */
 	@Test
+	@SuppressWarnings("unchecked")
 	public void test004_readingArticlesByTitle() {
 		
 		Session session = HibernateUtil.getSessionFactory().getCurrentSession();
@@ -181,6 +185,7 @@ public class ModelTest {
 	 * 
 	 */
 	@Test
+	@SuppressWarnings("unchecked")
 	public void test005_updateUserChangeEmail() {
 
 		String oldemail = userMiguel.getEmail();
@@ -223,6 +228,7 @@ public class ModelTest {
 	 * 
 	 */
 	@Test
+	@SuppressWarnings("unchecked")
 	public void test006_updateArticleChangeBody() {
 		
 		Long idarticle = articleMiguel2.getArticle_id();
@@ -370,7 +376,6 @@ public class ModelTest {
 	/**
 	 *
 	 *
-	 * 
 	 */
 	@Test
 	public void test009_notAllowedToAddArticlesWithoutUserPersisted() {
