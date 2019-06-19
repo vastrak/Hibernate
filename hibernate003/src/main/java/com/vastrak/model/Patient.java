@@ -49,7 +49,7 @@ public class Patient implements Serializable {
 
 	
 	// Esto crea una tabla con FK patient_id
-	// No es una relación OneToMany
+	// con los siguientes campos: patient_id(FK), bpm, date, diastolic, systolic
 	@ElementCollection(fetch=FetchType.LAZY)  
     @CollectionTable(name = "BLOODPRESSURES", joinColumns = @JoinColumn(name = "patient_id"))
 	@Column(name = "BPS")
