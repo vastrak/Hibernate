@@ -1,7 +1,10 @@
 package com.vastrak.hibernate006.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.util.Date;
 
 import org.apache.commons.logging.Log;
@@ -41,20 +44,55 @@ public class ModelTest {
 		try {
 			session = HibernateUtil.getSessionFactory().openSession();
 			Transaction tx = session.beginTransaction();
-			session.save(device);  // persist device
-			session.save(technician); // persit technician 
+			session.save(device); // persist device
+			session.save(technician); // persist technician
 			tx.commit();
 			session.close();
 		} catch (Exception e) {
 			logger.info(">>>> An exception has occurred " + e.getMessage());
 			assertThat(e).isNull();
 		}
-		
+
 		assertThat(device.getDevice_id()).isNotNull();
 		assertThat(technician.getTechnician_id()).isNotNull();
 		assertThat(issue.getIssue_id()).isNotNull();
 		assertThat(item.getIssueItem_id()).isNotNull();
 
+	}
+
+	/**
+	 * Helper to execute a Sql script file. 
+	 * It is required that there is no blank jump between queries.
+	 * Ignore comments.
+	 * @param sqlscript to execute
+	 * @throws Exception
+	 */
+	private static void executeSQLScript(String sqlscript) throws Exception {
+
+		// the script must be save in src/test/resources
+		// sqlscript = "src/test/resources/mysqlscript.sql"
+		String sqlstr = null;
+		try (FileReader fw = new FileReader(sqlscript);
+				BufferedReader br = new BufferedReader(fw);
+				Session session = HibernateUtil.getSessionFactory().openSession();) {
+			Transaction tx = session.beginTransaction();
+			while ((sqlstr = br.readLine()) != null) {
+				session.createSQLQuery(sqlstr).executeUpdate();
+			}
+			tx.commit();
+		} catch (Exception e) {
+			logger.error(">>>>> Exception when executing script at line: " + sqlstr);
+			throw e;
+		}
+		logger.info(">>>>> No problems with script: "+ sqlscript);
+		// session and files are closed
+	}
+
+	@Test
+	public void test002_populateEntities() {
+		
+		Throwable thrown = catchThrowable(() -> { executeSQLScript("src/test/resources/create-data.sql"); });
+		assertThat(thrown).isNull();
 	}
 
 }

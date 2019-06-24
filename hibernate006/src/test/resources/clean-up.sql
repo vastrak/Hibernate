@@ -1,0 +1,5 @@
+#REMOVE PREVIOUS DATA. 
+DELETE FROM issueitems;
+DELETE FROM issues;
+DELETE FROM devices;
+DELETE FROM technicians;
