@@ -6,6 +6,9 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.Date;
+import java.util.List;
+
+import javax.persistence.Query;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -61,9 +64,9 @@ public class ModelTest {
 	}
 
 	/**
-	 * Helper to execute a Sql script file. 
-	 * It is required that there is no blank jump between queries.
-	 * Ignore comments.
+	 * Helper to execute a Sql script file. It is required that there is no blank
+	 * jump between queries. Ignore comments.
+	 * 
 	 * @param sqlscript to execute
 	 * @throws Exception
 	 */
@@ -84,15 +87,69 @@ public class ModelTest {
 			logger.error(">>>>> Exception when executing script at line: " + sqlstr);
 			throw e;
 		}
-		logger.info(">>>>> No problems with script: "+ sqlscript);
+		logger.info(">>>>> No problems with script: " + sqlscript);
 		// session and files are closed
 	}
 
 	@Test
 	public void test002_populateEntities() {
-		
-		Throwable thrown = catchThrowable(() -> { executeSQLScript("src/test/resources/create-data.sql"); });
+
+		Throwable thrown = catchThrowable(() -> {
+			executeSQLScript("src/test/resources/create-data.sql");
+		});
 		assertThat(thrown).isNull();
 	}
 
+	@Test
+	@SuppressWarnings("unchecked")
+	public void test003_namedQueriesFindAll() {
+
+		session = HibernateUtil.getSessionFactory().openSession();
+		Query query = session.getNamedQuery("technician.findAll");
+		List<Technician> technicians = query.getResultList();
+		
+		assertThat(technicians).isNotNull();
+		assertThat(technicians.size()).isEqualTo(3);
+		
+		logger.info(">>>>> Technicians list size: " + technicians.size()); // must be 3
+		session.close();
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void test004_namedQueriesFindByName() {
+
+		session = HibernateUtil.getSessionFactory().openSession();
+		Query query = session.getNamedQuery("technician.findByName");
+		String name = "Arturo Tres López";
+		query.setParameter("name", name);
+		List<Technician> technicians = query.getResultList();
+
+		assertThat(technicians).isNotNull();
+		assertThat(technicians.get(0).getName()).isEqualTo(name);
+
+		logger.info(">>>>> FindByName: " + name + "=" + technicians.get(0).getName());
+
+		session.close();
+
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void test005_nameQueriesFindLikeName() {
+
+		session = HibernateUtil.getSessionFactory().openSession();
+		Query query = session.getNamedQuery("technician.findLikeName");
+		String name = "Arturo";
+		query.setParameter("name", "%" + name + "%");
+		List<Technician> technicians = query.getResultList();
+
+		assertThat(technicians).isNotNull();
+		assertThat(technicians.get(0).getName()).containsOnlyOnce(name);
+
+		logger.info(">>>>> FindLikeName: " + name + "=" + technicians.get(0).getName());
+
+		session.close();
+	}
+	
 }
