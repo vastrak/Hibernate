@@ -19,6 +19,10 @@
 		<property name="cache.provider_class">org.hibernate.cache.NoCacheProvider</property>
 		<!-- Echo all executed SQL to stdout -->
 		<property name="show_sql">true</property>
+		<!-- Format the generated SQL statement to make it more readable - no required  -->
+		<property name="format_sql">true</property>
+		<!-- Hibernate will put custom comments inside generated SQL - no required  -->
+		<property name="use_sql_comments">true</property>
 		<!-- Drop and re-create the database schema on startup -->
 		<property name="hbm2ddl.auto">create</property>
 		<!-- Mapping Model -->
