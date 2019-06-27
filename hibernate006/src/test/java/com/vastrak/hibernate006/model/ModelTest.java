@@ -8,7 +8,6 @@ import java.io.FileReader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Formatter;
 import java.util.List;
 
 import javax.persistence.Query;
@@ -178,6 +177,24 @@ public class ModelTest {
 
 		session.close();
 	}
+	
+	/**
+	 * Helper to get a String from the result of a query.
+	 * 
+	 * @param results list of array objects resulting from a query.
+	 * @return
+	 */
+	private String toLog(List<Object[]> results) {
+
+		StringBuilder sb = new StringBuilder("\n");
+		for (Object[] row : results) {
+			for (Object col : row) {
+				sb.append(col + ", ");
+			}
+			sb.append("\n");
+		}
+		return sb.toString();
+	}
 
 	@Test
 	@SuppressWarnings("unchecked")
@@ -192,22 +209,31 @@ public class ModelTest {
 
 		assertThat(results.size()).isEqualTo(4); //
 
-		// for retrieved this!
-		for (Object[] o : results) {
-			String name = (String) o[0];
-			Date deploy = (Date) o[1];
-			logger.info(String.format(">> name: %s, deploy %s", name, deploy));
-		}
+		logger.info(">>> "+toLog(results));
 
 		session.close();
 	}
 
+	/**
+	 * Helper to change String to Date type.
+	 * @param strDate formatted "yyyy-MM-dd HH:mm:ss"
+	 * @return a Date type.
+	 */
+	private Date toDate(String strDate) {
+		try {
+			SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			Date frmDate = format.parse(strDate);
+			return frmDate;
+		} catch (ParseException e) {
+			return null;
+		}
+	}
+	
 	@Test
-	public void test008_obtainingUniqueResultDevice() throws ParseException {
+	public void test008_obtainingUniqueResultDevice() {
 
-		// prev. Parse throws ParseException
-		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		Date frmDate = format.parse("2019-04-01 00:00:00.0");
+		// 
+		Date frmDate = toDate("2019-04-01 00:00:00.0");
 
 		String hql = "from Device de where de.deploy>:frmDate";
 
@@ -245,18 +271,40 @@ public class ModelTest {
 
 		assertThat(results.size()).isEqualTo(9); // igual a la cantidad de registros de issue
 
-		StringBuilder sb = new StringBuilder();
-		for (Object[] o : results) {
-			String name = (String) o[0];
-			Date created = (Date) o[1];
-			Date closed = (Date) o[2];
-			sb.append(String.format(">> name: %-20s, attended issue " + "created %s and closed %s\n", name, created,
-					closed));
-		}
-		logger.info(sb.toString());
+		logger.info(">>> "+ toLog(results));
 
 		session.close();
 
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void test10_innerJoinTechnicianIssueDeviceNativeSQL() {
+
+		// return resultset: (technician.name + device.name + issue.created +
+		// issue.closed)
+		// inner joint with 3 tables using native sql query.
+
+		// Si la columna repite propiedad [ej. name] se produce una excepción:
+		// NonUniqueDiscoveredSqlAliasException
+		// la solución es poner un alias a cada columna que pueda producir ambiguedad.
+		String sql = "SELECT technicians.name AS te, devices.name AS de, issues.created, issues.closed "
+				+ "FROM technicians INNER JOIN issues ON technicians.technician_id = issues.technician_id "
+				+ "INNER JOIN devices ON issues.device_id = devices.device_id ORDER BY te, de";
+
+		session = HibernateUtil.getSessionFactory().openSession();
+		Query query = session.createSQLQuery(sql);
+		List<Object[]> results = query.getResultList();
+
+		assertThat(results.size()).isEqualTo(9);
+		// first row: Arturo Tres López, Máquina A, 2019-06-05 00:00:00.0, 2019-06-12 01:00:00.0
+		assertThat(results.get(0)[0]).isEqualTo("Arturo Tres López");
+		assertThat(results.get(0)[1]).isEqualTo("Máquina A");
+		
+		logger.info(">>> results= " + results.size()); // 9 rows
+		logger.info(">>> " + toLog(results).toString()); // log result
+		
+		session.close();
 	}
 	
 }
