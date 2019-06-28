@@ -22,6 +22,14 @@ import org.junit.runners.MethodSorters;
 
 import com.vastrak.hibernate006.util.HibernateUtil;
 
+/**
+ * 	I want to check the behavior of the query and not case by case. 
+ *	This is not a complete test as it should be done. 
+ * 
+ * @author Christian
+ *
+ */
+
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ModelTest {
 
@@ -151,13 +159,26 @@ public class ModelTest {
 		session.close();
 	}
 
+	/**
+	 * Helper to change String to Date type.
+	 * @param strDate formatted "yyyy-MM-dd HH:mm:ss"
+	 * @return a Date type.
+	 */
+	private Date toDate(String strDate) {
+		try {
+			SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			Date frmDate = format.parse(strDate);
+			return frmDate;
+		} catch (ParseException e) {
+			return null;
+		}
+	}
+	
 	@Test
 	public void test006_findByDeployBetweenDates() throws ParseException {
 
-		// prev. Parse throws ParseException
-		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		Date frmDate = format.parse("2019-03-29 00:00:00.0");
-		Date endDate = format.parse("2019-05-01 00:00:00.0");
+		Date frmDate = toDate("2019-03-29 00:00:00.0");
+		Date endDate = toDate("2019-05-01 00:00:00.0");
 		//
 		session = HibernateUtil.getSessionFactory().openSession();
 		String hql = "from Device de where de.deploy between :frmDate and :endDate";
@@ -213,21 +234,6 @@ public class ModelTest {
 
 		session.close();
 	}
-
-	/**
-	 * Helper to change String to Date type.
-	 * @param strDate formatted "yyyy-MM-dd HH:mm:ss"
-	 * @return a Date type.
-	 */
-	private Date toDate(String strDate) {
-		try {
-			SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-			Date frmDate = format.parse(strDate);
-			return frmDate;
-		} catch (ParseException e) {
-			return null;
-		}
-	}
 	
 	@Test
 	public void test008_obtainingUniqueResultDevice() {
@@ -279,15 +285,16 @@ public class ModelTest {
 
 	@Test
 	@SuppressWarnings("unchecked")
-	public void test10_innerJoinTechnicianIssueDeviceNativeSQL() {
+	public void test010_innerJoinTechnicianIssueDeviceNativeSQL() {
 
+		// inner joint with 3 tables using native sql query.
 		// return resultset: (technician.name + device.name + issue.created +
 		// issue.closed)
-		// inner joint with 3 tables using native sql query.
+		
 
 		// Si la columna repite propiedad [ej. name] se produce una excepción:
 		// NonUniqueDiscoveredSqlAliasException
-		// la solución es poner un alias a cada columna que pueda producir ambiguedad.
+		// la solución es poner un alias a cada columna para que no exista ambigüedad.
 		String sql = "SELECT technicians.name AS te, devices.name AS de, issues.created, issues.closed "
 				+ "FROM technicians INNER JOIN issues ON technicians.technician_id = issues.technician_id "
 				+ "INNER JOIN devices ON issues.device_id = devices.device_id ORDER BY te, de";
@@ -302,9 +309,73 @@ public class ModelTest {
 		assertThat(results.get(0)[1]).isEqualTo("Máquina A");
 		
 		logger.info(">>> results= " + results.size()); // 9 rows
-		logger.info(">>> " + toLog(results).toString()); // log result
+		logger.info(">>> " + toLog(results)); // log result
 		
 		session.close();
+	}
+	
+	@Test
+	@SuppressWarnings("unchecked")
+	public void test011_innerJoinIssueIssueItems() {
+		
+		// I want to check the behavior of the query and not case by case. 
+		// This is not a complete test as it should be done.
+		
+		// with aliases it works, without them no.
+		String hql = "select p.issue_id, p.created, p.closed, "
+				+ "t.codeType, t.issueType, t.levelType "
+				+ "from Issue p inner join p.issueItems as t"; 
+		
+		// expected return:
+		// 1, 2019-06-05 00:00:00.0, 2019-06-12 01:00:00.0, ACODE, MECHANICAL, LOW, 
+		// ...
+		// 9, 2019-06-05 00:00:00.0, 2019-06-12 01:00:00.0, ACODE, ELECTRICAL, LOW, 
+		// 18 times.
+		
+		session = HibernateUtil.getSessionFactory().openSession();
+		Query query = session.createQuery(hql);
+		List<Object[]> results = query.getResultList();
+		
+		assertThat(results.size()).isEqualTo(18); // 18 issueItems!
+		
+		logger.info(">>> results= " + results.size());
+		logger.info(">>> "+ toLog(results));
+		
+		session.close();
+	}
+	
+	@Test
+	@SuppressWarnings("unchecked")
+	public void test012_innerJoinTechnicialIssueIssueItems() {
+		
+		// I want to check the behavior of the query and not case by case. 
+		// This is not a complete test as it should be done.
+		
+		// Inner Join for three tables
+		// technician->issue->issueItem
+		
+		String hql = "select te.name, iss.issue_id, iss.created, iss.closed, "
+				+ "itm.issueType, itm.levelType "
+				+ "from Technician te "
+				+ "inner join te.issues as iss "
+				+ "inner join iss.issueItems as itm";
+		
+		// expected return:
+		// Luis Uno Zelaya, 2019-06-05 00:00:00.0, 2019-06-12 01:00:00.0, MECHANICAL, LOW,
+		// ...
+		// x 18 issueItems
+		
+		session = HibernateUtil.getSessionFactory().openSession();
+		Query query = session.createQuery(hql);
+		List<Object[]> results = query.getResultList();
+
+		assertThat(results.size()).isEqualTo(18); // 18 issueItems!
+		
+		logger.info(">>> results= " + results.size());
+		logger.info(">>> "+ toLog(results));		
+		
+		session.close();
+		
 	}
 	
 }

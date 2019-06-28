@@ -1,9 +1,9 @@
 package com.vastrak.hibernate006.model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
@@ -47,8 +47,8 @@ public class Issue implements Serializable {
 	
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
 	@JoinColumn(name = "issue_id") // se crea una FK en la tabla ISSUEITEMS con referencia a ISSUES
-	private Set<IssueItem> issueItems = new HashSet<>();
-	
+	private List<IssueItem> issueItems = new ArrayList<>();
+		
 	/**
 	 * Helper methods to update unidirectional associations
 	 * Add an IssueItem to entity
@@ -57,7 +57,7 @@ public class Issue implements Serializable {
 	public void addIssueItem(IssueItem issueItem) {
 		
 		if(issueItems == null) {
-			issueItems = new HashSet<>();
+			issueItems = new ArrayList<>();
 		}
 		issueItems.add(issueItem);
 	}
@@ -69,7 +69,7 @@ public class Issue implements Serializable {
 	 */
 	public void removeIssueItem(IssueItem issueItem) {
 		if(issueItems == null) {
-			issueItems = new HashSet<>();
+			issueItems = new ArrayList<>();
 		}
 		issueItems.remove(issueItem);
 	}
