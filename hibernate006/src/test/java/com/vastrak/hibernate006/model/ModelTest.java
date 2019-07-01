@@ -1,10 +1,9 @@
 package com.vastrak.hibernate006.model;
 
+import static com.vastrak.hibernate006.util.Helper.executeSQLScript;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -73,33 +72,7 @@ public class ModelTest {
 
 	}
 
-	/**
-	 * Helper to execute a Sql script file. It is required that there is no blank
-	 * jump between queries. Ignore comments.
-	 * 
-	 * @param sqlscript to execute
-	 * @throws Exception
-	 */
-	private static void executeSQLScript(String sqlscript) throws Exception {
 
-		// the script must be save in src/test/resources
-		// sqlscript = "src/test/resources/mysqlscript.sql"
-		String sqlstr = null;
-		try (FileReader fw = new FileReader(sqlscript);
-				BufferedReader br = new BufferedReader(fw);
-				Session session = HibernateUtil.getSessionFactory().openSession();) {
-			Transaction tx = session.beginTransaction();
-			while ((sqlstr = br.readLine()) != null) {
-				session.createSQLQuery(sqlstr).executeUpdate();
-			}
-			tx.commit();
-		} catch (Exception e) {
-			logger.error(">>>>> Exception when executing script at line: " + sqlstr);
-			throw e;
-		}
-		logger.info(">>>>> No problems with script: " + sqlscript);
-		// session and files are closed
-	}
 
 	@Test
 	public void test002_populateEntities() {
