@@ -15,6 +15,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.junit.AfterClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
@@ -349,6 +350,16 @@ public class ModelTest {
 		
 		session.close();
 		
+	}
+	
+	@AfterClass
+	public static void cleanUp() {
+
+		Throwable thrown = catchThrowable(() -> {
+			executeSQLScript("src/test/resources/clean-up.sql");
+		});
+		assertThat(thrown).isNull();
+
 	}
 	
 }
